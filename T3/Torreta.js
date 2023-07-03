@@ -51,7 +51,7 @@ class Torreta {
     this.removeDaLista();
   }
 
-  atira(aviao) {
+  atira(aviao, torretaSound) {
     if (this.atirando) {
       return;
     }
@@ -68,9 +68,13 @@ class Torreta {
 
     this.scene.add(tiroMesh);
     this.tiros.push(tiroMesh);
+    if (torretaSound.buffer) {
+      console.log("buffering");
+      torretaSound.play();
+    }
   }
 
-  update(movimentoAviao) {
+  update(movimentoAviao, torretaSound) {
     if (!this.torreta) {
       return;
     }
@@ -89,7 +93,7 @@ class Torreta {
         this.torreta.position.distanceTo(movimentoAviao.position) < 350 &&
         movimentoAviao.position.z > this.torreta.position.z
       ) {
-        this.atira(movimentoAviao);
+        this.atira(movimentoAviao, torretaSound);
       }
     }
 

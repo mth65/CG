@@ -1,7 +1,5 @@
 import * as THREE from "three";
-import { OrbitControls } from "../build/jsm/controls/OrbitControls.js";
 import { GLTFLoader } from "../build/jsm/loaders/GLTFLoader.js";
-import { Arvore } from "./objeto/Arvore.js";
 import { Plano } from "./Plano.js";
 import {
   initRenderer,
@@ -9,14 +7,11 @@ import {
   onWindowResize,
   getMaxSize,
 } from "../libs/util/util.js";
-import {
-  MeshLambertMaterial,
-  MeshPhongMaterial,
-} from "../build/three.module.js";
 import { Tiro } from "./Tiro.js";
 import KeyboardState from "../libs/util/KeyboardState.js";
 import Torreta from "./Torreta.js";
 import { Aviao } from "./Aviao.js";
+import { Buttons } from "../libs/other/buttons.js";
 
 //-------------------------------------------------------------------------------
 // Setagem da Scene
@@ -59,8 +54,14 @@ var audioListener = new THREE.AudioListener();
 camera.add(audioListener);
 const audioLoader = new THREE.AudioLoader();
 
-const airplaneSound = new THREE.Audio(audioListener);
+const torretaSound = new THREE.Audio(audioListener);
 audioLoader.load("assets/sounds/shoot.mp3", function (buffer) {
+  console.log("torreta atirou");
+  torretaSound.setBuffer(buffer);
+  torretaSound.setVolume(0.1);
+});
+const airplaneSound = new THREE.Audio(audioListener);
+audioLoader.load("assets/sounds/shoot2.mp3", function (buffer) {
   airplaneSound.setBuffer(buffer);
   airplaneSound.setVolume(0.1);
 });
@@ -224,6 +225,57 @@ function onMouseDown(event) {
     }
   }
 }
+
+//-------------------------------------------------------------------------------
+// Controles Mobile
+//-------------------------------------------------------------------------------
+
+var buttons = new Buttons(onButtonDown, onButtonUp);
+
+function addJoysticks(){
+	// Details in the link bellow:
+	// https://yoannmoi.net/nipplejs/
+
+	let joystickL = nipplejs.create({
+		zone: document.getElementById('joystickWrapper1'),
+		mode: 'static',
+		lockX: true, // only move on the Y axis
+		position: { top: '-80px', left: '80px' }
+	});
+
+	joystickL.on('move', function (evt, data) {
+		const steer = data.vector.x;
+		actions.left = actions.right = false;
+		if(steer > 0) actions.right = true;
+		if(steer < 0) actions.left = true;
+	})
+
+	joystickL.on('end', function (evt) {
+		actions.left = actions.right = false;
+	})
+}
+
+function onButtonDown(event) {
+	switch(event.target.id)
+	{
+		case "A":
+      onMouseDown();
+		break;
+		case "S":
+      toggleMusic();
+    break;
+    case "full":
+      buttons.setFullScreen();
+    break;
+	}
+}
+
+function onButtonUp(event) {
+
+}
+
+addJoysticks();
+
 //-------------------------------------------------------------------------------
 // Cria o Raycaster
 //-------------------------------------------------------------------------------
@@ -428,12 +480,6 @@ movimentoAviao.visible = true;
 var aviaoSpeed = 0.1;
 var direcaoAnteriorAviao = new THREE.Vector3(0, 0, -1);
 
-
-
-
-// var playerboxSetada = false;
-
-
 // Criando Torreta
 function criaNovasTorretas(posicao) {
   for (let i = 0; i < 3; i++) {
@@ -458,28 +504,14 @@ tiros.forEach(function (tiro) {
 
 
 
-
-
-
-
-//--ARVORE--
-const numArvores = 200;
-//materiais das ávores
-var materialTrunk = new THREE.MeshPhongMaterial({ color: "brown" });
-materialTrunk.transparent = true;
-//material folha
-var materialLeaves = new THREE.MeshPhongMaterial({ color: "green" });
-materialLeaves.transparent = true;
-
-
+//-------------------------------------------------------------------------------
+// Render
+//-------------------------------------------------------------------------------
 
 
 //Render
 var musicLoaded = false;
 render();
-
-
-
 
 function render() {
   assetManager.checkLoaded();
@@ -507,7 +539,7 @@ function render() {
     let posicaoCameraX = cameraHolder.position.z;
     plano.desenhaPlano(posicaoCameraX, criaNovasTorretas);
 
-    torretas.forEach((torreta) => torreta.update(movimentoAviao));
+    torretas.forEach((torreta) => torreta.update(movimentoAviao, torretaSound));
 
     // Atualizar a posição das miras com base na posição do mouse
     raycaster.setFromCamera(mouse, camera);
@@ -565,6 +597,9 @@ function render() {
   }
 }
 
+//-------------------------------------------------------------------------------
+// Função de Colisão
+//-------------------------------------------------------------------------------
 
 function verificaColisao(pos1, bound1, pos2, bound2) {
   function verificaColisaoPonto(x1min, x1max, x2min, x2max) {

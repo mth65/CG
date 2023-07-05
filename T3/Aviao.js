@@ -42,7 +42,7 @@ onAirplaneLoad(scene, gltf) {
     this.corpo.scale.set(5,5,5);
     this.corpo.rotateY(3.13);
 
-    let posicaoAviao = new THREE.Vector3(0, 20, 35);
+    let posicaoAviao = new THREE.Vector3(0, 10, 35);
     this.corpo.position.copy(posicaoAviao);
     this.caixaDeColisao.position.copy(posicaoAviao);
 

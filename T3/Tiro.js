@@ -16,8 +16,8 @@ export class Tiro {
 
     this.object.position.set(this.px, this.py, this.pz);
     this.direcao = new THREE.Vector3().copy(direcao).multiplyScalar(10);
-    direcao.setComponent(1, direcao.getComponent(1)+0.02)
-    console.log(direcao)
+    direcao.setComponent(1, direcao.getComponent(1) + 0.02);
+    //console.log(direcao)
   }
 
   verificaColisao(min1, min2, max1, max2) {

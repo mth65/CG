@@ -1,10 +1,15 @@
 import * as THREE from "three";
 import { Plano } from "./Plano.js";
-import { onWindowResize } from "../libs/util/util.js";
+import {
+  onWindowResize,
+} from "../libs/util/util.js";
 import { loadGLBFile } from "./LoaderGLB.js";
 import { Tiro } from "./Tiro.js";
 import { Torreta } from "./Torreta.js";
 import { Aviao } from "./Aviao.js";
+import { Buttons } from "../libs/other/buttons.js";
+import { Vector2 } from "../build/three.module.js";
+
 //-------------------------------------------------------------------------------
 // Setagem da Scene
 //-------------------------------------------------------------------------------
@@ -68,6 +73,7 @@ audioLoader.load("assets/sounds/darthvader.mp3", function (buffer) {
   vaderMusic.setVolume(0.1);
 });
 
+
 //-------------------------------------------------------------------------------
 // Luz
 //-------------------------------------------------------------------------------
@@ -97,6 +103,7 @@ function setDirectionalLighting(position) {
 
   scene.add(dirLight);
 }
+
 
 //-------------------------------------------------------------------------------
 // Skybox
@@ -132,6 +139,7 @@ loadSkybox();
 // Event Listeners (Controles)
 //-------------------------------------------------------------------------------
 
+
 window.addEventListener(
   "resize",
   function () {
@@ -139,21 +147,6 @@ window.addEventListener(
   },
   false
 );
-
-window.addEventListener("mousemove", onMouseMove, false);
-window.addEventListener("contextmenu", onRightClick, false);
-window.addEventListener("keydown", onKeyPress, false);
-window.addEventListener("mousedown", onMouseDown, false);
-
-// Função para obter a posição do mouse
-function onMouseMove(event) {
-  // Atualizar a última posição do mouse
-  lastMousePosition.x = event.clientX;
-  lastMousePosition.y = event.clientY;
-
-  mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
-  mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
-}
 
 //ao clicar no mouse
 function onRightClick(event) {
@@ -174,36 +167,16 @@ function toggleSimulation() {
   document.body.style.cursor = isCursorVisible ? "auto" : "none";
 }
 
-let velocidade2x = false;
-let velocidade5x = false;
-function toggleVelocidade(speed) {
-  switch (speed) {
-    case 1:
-      velocidade2x = false;
-      velocidade5x = false;
-      break;
-    case 2:
-      velocidade5x = false;
-      velocidade2x = true;
-      break;
-    case 3:
-      velocidade5x = true;
-      break;
-  }
-
-  isCursorVisible = !isCursorVisible;
-  document.body.style.cursor = isCursorVisible ? "auto" : "none";
-}
-
-function toggleMusic() {
+function toggleMusic(){
   console.log("entrou na func");
-  if (!vaderMusic.isPlaying) {
+  if(!vaderMusic.isPlaying){
     console.log("isplaying");
     if (vaderMusic.buffer) {
       console.log("buffering");
       vaderMusic.play();
     }
-  } else {
+  }
+  else{
     console.log("stop music");
     vaderMusic.stop();
   }
@@ -213,17 +186,8 @@ function onKeyPress(event) {
   if (event.code === "Escape") {
     toggleSimulation();
   }
-  if (event.code === "KeyS") {
+  if (event.code === "KeyS"){
     toggleMusic();
-  }
-  if (event.code === "KeyQ") {
-    toggleVelocidade(1);
-  }
-  if (event.code === "KeyW") {
-    toggleVelocidade(2);
-  }
-  if (event.code === "KeyE") {
-    toggleVelocidade(3);
   }
 }
 
@@ -245,12 +209,84 @@ function onMouseDown(event) {
 }
 
 //-------------------------------------------------------------------------------
-// Cria o Raycaster
+// Controles Mobile
 //-------------------------------------------------------------------------------
 
-// Variáveis para armazenar a posição do mouse
-const mouse = new THREE.Vector2();
-var lastMousePosition = new THREE.Vector2(); // Última posição do mouse
+var buttons = new Buttons(onButtonDown, onButtonUp);
+var actions = {};
+
+function syncJoystick() {
+  console.log(mouse);
+
+  if(actions.up){
+    mouse.add(new Vector2(0,0.003));
+    console.log(mouse);
+  }
+  if(actions.down){
+    mouse.add(new Vector2(0,-0.003));
+    console.log(mouse);
+  }
+  if(actions.left){
+    mouse.add(new Vector2(-0.003,0));
+  }
+  if(actions.right){
+    mouse.add(new Vector2(0.003,0));
+  }
+}
+
+function addJoysticks(){
+	// Details in the link bellow:
+	// https://yoannmoi.net/nipplejs/
+
+	let joystickL = nipplejs.create({
+		zone: document.getElementById('joystickWrapper1'),
+		mode: 'static',
+		position: { top: '-80px', left: '80px' }
+	});
+
+	joystickL.on('move', function (evt, data) {
+		const horizontal = data.vector.x;
+		const vertical = data.vector.y;
+
+		actions.left = actions.right = false;
+    actions.up = actions.down = false;
+
+    if(horizontal > 0) actions.right = true;
+		if(horizontal < 0) actions.left = true;
+    if(vertical > 0) actions.up = true;
+    if(vertical < 0) actions.down = true;
+	})
+
+	joystickL.on('end', function (evt) {
+		actions.left = actions.right = false;
+    actions.up = actions.down = false;
+	})
+}
+
+function onButtonDown(event) {
+	switch(event.target.id)
+	{
+		case "A":
+      onMouseDown();
+		break;
+		case "S":
+      toggleMusic();
+    break;
+    case "full":
+      buttons.setFullScreen();
+    break;
+	}
+}
+
+function onButtonUp(event) {
+
+}
+
+addJoysticks();
+
+//-------------------------------------------------------------------------------
+// Cria o Raycaster
+//-------------------------------------------------------------------------------c
 
 // Plano do Raycaster
 const raycaster = new THREE.Raycaster();
@@ -350,22 +386,20 @@ var aviaoSpeed = 0.1;
 var direcaoAnteriorAviao = new THREE.Vector3(0, 0, -1);
 
 // Criando Torreta
-let torretas = [];
 function criaNovasTorretas(posicao) {
   for (let i = 0; i < 3; i++) {
     let indice = torretas.length;
-    let torreta = new Torreta(posicao, scene, function () {
-      torretas.splice(indice, 1);
-    });
-    console.log(torreta);
-    torretas.push(torreta);
+    torretas.push(
+      new Torreta(posicao, scene, function () {
+        torretas.splice(indice, 1);
+      })
+    );
   }
 }
+let torretas = [];
 criaNovasTorretas(0);
 criaNovasTorretas(-500);
 criaNovasTorretas(-1000);
-criaNovasTorretas(-1500);
-criaNovasTorretas(-2000);
 
 // Criando tiros
 var tiros = [];
@@ -373,33 +407,33 @@ tiros.forEach(function (tiro) {
   scene.add(tiro.object);
 });
 
+// Variáveis para armazenar a posição do mouse
+const mouse = new THREE.Vector2(0,0);
+
+
 //-------------------------------------------------------------------------------
 // Render
 //-------------------------------------------------------------------------------
+
 
 //Render
 var musicLoaded = false;
 render();
 
 function render() {
-  // assetManager.checkLoaded();
-  requestAnimationFrame(render);
 
-  if (!musicLoaded) {
-    if (vaderMusic.buffer) {
+  requestAnimationFrame(render);
+  syncJoystick()
+
+  if (!musicLoaded){
+    if(vaderMusic.buffer){
       vaderMusic.play();
       musicLoaded = true;
     }
   }
   if (!isPaused) {
     const velocidadePadrao = 1; // Velocidade padrão dos outros objetos na cena
-    let proporcaoVelocidade = velocidadePadrao / aviaoSpeed;
-    if (velocidade5x) {
-      proporcaoVelocidade = 5 * proporcaoVelocidade;
-    } else if (velocidade2x) {
-      proporcaoVelocidade = 2 * proporcaoVelocidade;
-    }
-    //console.log(proporcaoVelocidade);
+    const proporcaoVelocidade = velocidadePadrao / aviaoSpeed;
     renderer.render(scene, camera);
     cameraHolder.position.z -= aviaoSpeed * proporcaoVelocidade;
     largeSquare.position.z -= aviaoSpeed * proporcaoVelocidade;

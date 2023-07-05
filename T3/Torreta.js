@@ -1,7 +1,7 @@
 import * as THREE from "three";
-import { loadGLBFile, verificaColisao } from "./trabalho3.js";
+import { loadGLBFile } from "./LoaderGLB.js";
 
-class Torreta {
+export class Torreta {
   constructor(posicao, scene, removeDaLista) {
     this.scene = scene;
     this.removeDaLista = removeDaLista;
@@ -12,35 +12,42 @@ class Torreta {
     this.recarregando = this.atirando ? Math.random() * this.cadencia : 0;
     this.tiros = [];
 
-    loadGLBFile("/T2/objeto/", "gun_turrent", true, 20.0, (torreta) => {
-      this.torreta = torreta;
+    loadGLBFile(
+      this.scene,
+      "./objeto/",
+      "gun_turrent",
+      true,
+      20.0,
+      (torreta) => {
+        this.torreta = torreta;
 
-      this.torreta.position
-        .setX(Math.random() * 160 - 80)
-        .setZ(posicao + Math.random() * -500);
+        this.torreta.position
+          .setX(Math.random() * 160 - 80)
+          .setZ(posicao + Math.random() * -400);
 
-      this.caixaDeColisao = new THREE.Mesh(
-        new THREE.BoxGeometry(20, 20, 20),
-        new THREE.MeshBasicMaterial({
-          transparent: true,
-          opacity: 0,
-          color: "red",
-        })
-      );
+        this.caixaDeColisao = new THREE.Mesh(
+          new THREE.BoxGeometry(20, 20, 20),
+          new THREE.MeshBasicMaterial({
+            transparent: true,
+            opacity: 0,
+            color: "red",
+          })
+        );
 
-      scene.add(this.caixaDeColisao);
-      this.torreta.caixaDeColisao = this.caixaDeColisao;
-      this.caixaDeColisao.position.copy(torreta.position);
-      this.caixaDeColisao.position.add(new THREE.Vector3(14, 0, 7));
-      scene.add(new THREE.BoxHelper( this.torreta, 0xffff00 ))
-    });
+        scene.add(this.caixaDeColisao);
+        this.torreta.caixaDeColisao = this.caixaDeColisao;
+        this.caixaDeColisao.position.copy(torreta.position);
+        this.caixaDeColisao.position.add(new THREE.Vector3(14, 0, 7));
+        // scene.add(new THREE.BoxHelper( this.torreta, 0xffff00 ))
+      }
+    );
   }
 
   destroi() {
     setTimeout(() => {
       this.tiros.forEach((tiro) => {
         this.scene.remove(tiro);
-      }, 2000);
+      }, 500);
     });
 
     this.scene.remove(this.torreta);
@@ -69,7 +76,7 @@ class Torreta {
     this.scene.add(tiroMesh);
     this.tiros.push(tiroMesh);
     if (torretaSound.buffer) {
-      console.log("buffering");
+      //console.log("buffering");
       torretaSound.play();
     }
   }
@@ -90,7 +97,7 @@ class Torreta {
 
     if (movimentoAviao) {
       if (
-        this.torreta.position.distanceTo(movimentoAviao.position) < 350 &&
+        this.torreta.position.distanceTo(movimentoAviao.position) < 450 &&
         movimentoAviao.position.z > this.torreta.position.z
       ) {
         this.atira(movimentoAviao, torretaSound);

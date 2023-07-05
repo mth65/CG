@@ -1,8 +1,6 @@
 import * as THREE from "three";
 import { Plano } from "./Plano.js";
-import {
-  onWindowResize,
-} from "../libs/util/util.js";
+import { onWindowResize } from "../libs/util/util.js";
 import { loadGLBFile } from "./LoaderGLB.js";
 import { Tiro } from "./Tiro.js";
 import { Torreta } from "./Torreta.js";
@@ -73,7 +71,6 @@ audioLoader.load("assets/sounds/darthvader.mp3", function (buffer) {
   vaderMusic.setVolume(0.1);
 });
 
-
 //-------------------------------------------------------------------------------
 // Luz
 //-------------------------------------------------------------------------------
@@ -103,7 +100,6 @@ function setDirectionalLighting(position) {
 
   scene.add(dirLight);
 }
-
 
 //-------------------------------------------------------------------------------
 // Skybox
@@ -139,7 +135,6 @@ loadSkybox();
 // Event Listeners (Controles)
 //-------------------------------------------------------------------------------
 
-
 window.addEventListener(
   "resize",
   function () {
@@ -167,16 +162,15 @@ function toggleSimulation() {
   document.body.style.cursor = isCursorVisible ? "auto" : "none";
 }
 
-function toggleMusic(){
+function toggleMusic() {
   console.log("entrou na func");
-  if(!vaderMusic.isPlaying){
+  if (!vaderMusic.isPlaying) {
     console.log("isplaying");
     if (vaderMusic.buffer) {
       console.log("buffering");
       vaderMusic.play();
     }
-  }
-  else{
+  } else {
     console.log("stop music");
     vaderMusic.stop();
   }
@@ -186,7 +180,7 @@ function onKeyPress(event) {
   if (event.code === "Escape") {
     toggleSimulation();
   }
-  if (event.code === "KeyS"){
+  if (event.code === "KeyS") {
     toggleMusic();
   }
 }
@@ -218,69 +212,66 @@ var actions = {};
 function syncJoystick() {
   console.log(mouse);
 
-  if(actions.up){
-    mouse.add(new Vector2(0,0.003));
+  if (actions.up) {
+    mouse.add(new Vector2(0, 0.003));
     console.log(mouse);
   }
-  if(actions.down){
-    mouse.add(new Vector2(0,-0.003));
+  if (actions.down) {
+    mouse.add(new Vector2(0, -0.003));
     console.log(mouse);
   }
-  if(actions.left){
-    mouse.add(new Vector2(-0.003,0));
+  if (actions.left) {
+    mouse.add(new Vector2(-0.003, 0));
   }
-  if(actions.right){
-    mouse.add(new Vector2(0.003,0));
+  if (actions.right) {
+    mouse.add(new Vector2(0.003, 0));
   }
 }
 
-function addJoysticks(){
-	// Details in the link bellow:
-	// https://yoannmoi.net/nipplejs/
+function addJoysticks() {
+  // Details in the link bellow:
+  // https://yoannmoi.net/nipplejs/
 
-	let joystickL = nipplejs.create({
-		zone: document.getElementById('joystickWrapper1'),
-		mode: 'static',
-		position: { top: '-80px', left: '80px' }
-	});
+  let joystickL = nipplejs.create({
+    zone: document.getElementById("joystickWrapper1"),
+    mode: "static",
+    position: { top: "-80px", left: "80px" },
+  });
 
-	joystickL.on('move', function (evt, data) {
-		const horizontal = data.vector.x;
-		const vertical = data.vector.y;
+  joystickL.on("move", function (evt, data) {
+    const horizontal = data.vector.x;
+    const vertical = data.vector.y;
 
-		actions.left = actions.right = false;
+    actions.left = actions.right = false;
     actions.up = actions.down = false;
 
-    if(horizontal > 0) actions.right = true;
-		if(horizontal < 0) actions.left = true;
-    if(vertical > 0) actions.up = true;
-    if(vertical < 0) actions.down = true;
-	})
+    if (horizontal > 0) actions.right = true;
+    if (horizontal < 0) actions.left = true;
+    if (vertical > 0) actions.up = true;
+    if (vertical < 0) actions.down = true;
+  });
 
-	joystickL.on('end', function (evt) {
-		actions.left = actions.right = false;
+  joystickL.on("end", function (evt) {
+    actions.left = actions.right = false;
     actions.up = actions.down = false;
-	})
+  });
 }
 
 function onButtonDown(event) {
-	switch(event.target.id)
-	{
-		case "A":
+  switch (event.target.id) {
+    case "A":
       onMouseDown();
-		break;
-		case "S":
+      break;
+    case "S":
       toggleMusic();
-    break;
+      break;
     case "full":
       buttons.setFullScreen();
-    break;
-	}
+      break;
+  }
 }
 
-function onButtonUp(event) {
-
-}
+function onButtonUp(event) {}
 
 addJoysticks();
 
@@ -400,7 +391,8 @@ let torretas = [];
 criaNovasTorretas(0);
 criaNovasTorretas(-500);
 criaNovasTorretas(-1000);
-
+criaNovasTorretas(-1500);
+criaNovasTorretas(-2000);
 // Criando tiros
 var tiros = [];
 tiros.forEach(function (tiro) {
@@ -408,25 +400,22 @@ tiros.forEach(function (tiro) {
 });
 
 // Variáveis para armazenar a posição do mouse
-const mouse = new THREE.Vector2(0,0);
-
+const mouse = new THREE.Vector2(0, 0);
 
 //-------------------------------------------------------------------------------
 // Render
 //-------------------------------------------------------------------------------
-
 
 //Render
 var musicLoaded = false;
 render();
 
 function render() {
-
   requestAnimationFrame(render);
-  syncJoystick()
+  syncJoystick();
 
-  if (!musicLoaded){
-    if(vaderMusic.buffer){
+  if (!musicLoaded) {
+    if (vaderMusic.buffer) {
       vaderMusic.play();
       musicLoaded = true;
     }

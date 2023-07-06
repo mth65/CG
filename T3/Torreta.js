@@ -29,6 +29,7 @@ export class Torreta {
           new THREE.BoxGeometry(20, 20, 20),
           new THREE.MeshBasicMaterial({
             transparent: true,
+            visible: false,
             opacity: 0,
             color: "red",
           })

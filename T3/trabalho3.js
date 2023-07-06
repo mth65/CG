@@ -5,6 +5,7 @@ import { loadGLBFile } from "./LoaderGLB.js";
 import { Tiro } from "./Tiro.js";
 import { Torreta } from "./Torreta.js";
 import { Aviao } from "./Aviao.js";
+import { Vector3 } from "../build/three.module.js";
 //-------------------------------------------------------------------------------
 // Setagem da Scene
 //-------------------------------------------------------------------------------
@@ -17,6 +18,10 @@ scene = new THREE.Scene(); // Create main scene
 renderer = new THREE.WebGLRenderer();
 renderer.setSize(window.innerWidth, window.innerHeight);
 document.body.appendChild(renderer.domElement);
+renderer.shadowMap.enabled = true;
+renderer.shadowMapSoft = true;
+renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+
 
 //-------------------------------------------------------------------------------
 // Camera
@@ -28,7 +33,7 @@ camera = new THREE.PerspectiveCamera(
   65,
   window.innerWidth / window.innerHeight,
   0.1,
-  5000
+  10000
 );
 camera.position.copy(camPos);
 camera.up.copy(camUp);
@@ -72,10 +77,11 @@ audioLoader.load("assets/sounds/darthvader.mp3", function (buffer) {
 // Luz
 //-------------------------------------------------------------------------------
 
-const ambientColor = "rgb(50,50,50)";
+const ambientColor = "rgb(100,100,100)";
 let ambientLight = new THREE.AmbientLight(ambientColor);
+ambientLight.castShadow = false;
 scene.add(ambientLight);
-let lightPosition = new THREE.Vector3(10, 15, 0);
+let lightPosition = new THREE.Vector3(30, 50, 50);
 let lightColor = "rgb(255,255,255)";
 let dirLight = new THREE.DirectionalLight(lightColor);
 setDirectionalLighting(lightPosition);
@@ -85,16 +91,18 @@ function setDirectionalLighting(position) {
 
   // Shadow settings
   dirLight.castShadow = true;
-  dirLight.shadow.mapSize.width = 512;
-  dirLight.shadow.mapSize.height = 512;
+  dirLight.shadow.mapSize.width = 2048;
+  dirLight.shadow.mapSize.height = 2048;
   dirLight.shadow.camera.near = 1;
-  dirLight.shadow.camera.far = 30;
-  dirLight.shadow.camera.left = -15;
-  dirLight.shadow.camera.right = 15;
-  dirLight.shadow.camera.top = 15;
-  dirLight.shadow.camera.bottom = -15;
+  dirLight.shadow.camera.far = 10000;
+  dirLight.shadow.camera.left = -500;
+  dirLight.shadow.camera.right = 500;
+  dirLight.shadow.camera.top = 500;
+  dirLight.shadow.camera.bottom = -500;
+  dirLight.intensity = 1.5;
   dirLight.name = "Direction Light";
-
+  const helper = new THREE.DirectionalLightHelper( dirLight, 5 );
+  dirLight.add( helper );
   scene.add(dirLight);
 }
 
@@ -122,7 +130,7 @@ function loadSkybox() {
       });
     });
 
-  let skyboxCube = new THREE.BoxGeometry(4000, 4000, 4000);
+  let skyboxCube = new THREE.BoxGeometry(15000, 15000, 15000);
   skyboxMesh = new THREE.Mesh(skyboxCube, materials);
   scene.add(skyboxMesh);
 }
@@ -148,11 +156,20 @@ window.addEventListener("mousedown", onMouseDown, false);
 // Função para obter a posição do mouse
 function onMouseMove(event) {
   // Atualizar a última posição do mouse
-  lastMousePosition.x = event.clientX;
-  lastMousePosition.y = event.clientY;
+  lastMousePosition.x = mouse.x;
+  lastMousePosition.y = mouse.y;
 
   mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
   mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
+
+  angulaAviao(lastMousePosition, mouse);
+}
+
+function angulaAviao(lastMousePosition, mouse) {
+  if(lastMousePosition.x > mouse.x) {if(movimentoAviao.rotation.z <= 0.3){ movimentoAviao.rotateZ(0.005); }}
+  else if(lastMousePosition.x < mouse.x) {if(movimentoAviao.rotation.z >= -0.3){ movimentoAviao.rotateZ(-0.005); }}
+  if(lastMousePosition.y < mouse.y)  {if(movimentoAviao.rotation.x <= 0.3){ movimentoAviao.rotateX(0.005); }}
+  else if(lastMousePosition.y > mouse.y) {if(movimentoAviao.rotation.x >= -0.3){ movimentoAviao.rotateX(-0.005); }}
 }
 
 //ao clicar no mouse
@@ -216,13 +233,13 @@ function onKeyPress(event) {
   if (event.code === "KeyS") {
     toggleMusic();
   }
-  if (event.code === "KeyQ") {
+  if (event.code === "Digit1") {
     toggleVelocidade(1);
   }
-  if (event.code === "KeyW") {
+  if (event.code === "Digit2") {
     toggleVelocidade(2);
   }
-  if (event.code === "KeyE") {
+  if (event.code === "Digit3") {
     toggleVelocidade(3);
   }
 }
@@ -384,7 +401,9 @@ render();
 function render() {
   // assetManager.checkLoaded();
   requestAnimationFrame(render);
+  funcaoFade();
 
+  movimentoAviao.defaultMove();
   if (!musicLoaded) {
     if (vaderMusic.buffer) {
       vaderMusic.play();
@@ -464,11 +483,22 @@ function render() {
         new THREE.Vector3(0, 0, -aviaoSpeed * proporcaoVelocidade * aviaoFoco)
       );
 
+
       tiros.forEach(function (tiro) {
         tiro.anda(torretas);
       });
     }
   }
+}
+
+function funcaoFade(){
+  scene.traverse( function( node ) {
+    if ( node instanceof THREE.Mesh ) {
+      if ( node.isMesh ) { node.castShadow = true;      node.receiveShadow = true;
+      }
+      if (node.material) { node.material.side = THREE.DoubleSide; }
+    }
+  } );
 }
 
 //-------------------------------------------------------------------------------

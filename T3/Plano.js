@@ -31,7 +31,7 @@ export class Plano {
 
   desenhaPlano(posicaoCameraX, criaNovasTorretas) {
     let proxPlano = -2500;
-    console.log("POSOÇÃO CÂMERA ------------------", posicaoCameraX);
+    // console.log("POSiÇÃO CÂMERA ------------------", posicaoCameraX);
 
     if (posicaoCameraX < this.limiteCriadorDePlano) {
       this.limiteCriadorDePlano -= 500;
@@ -39,28 +39,35 @@ export class Plano {
       if (this.alternadorDePlano === 0) {
         this.novaPosition = this.plano1.position.z + proxPlano;
         console.log("CRIANDO PLANO 1", this.plano1.position.z);
-        this.plano1.opacity = 0;
         this.plano1.position.set(0, 0, this.novaPosition);
         this.alternadorDePlano = 1;
-      } else if (this.alternadorDePlano === 1) {
+      }
+
+      else if (this.alternadorDePlano === 1) {
         console.log("CRIANDO PLANO 2", this.plano2.position.z);
         console.log("CRIANDO PLANO", this.alternadorDePlano);
         this.novaPosition = this.plano2.position.z + proxPlano;
         this.plano2.position.set(0, 0, this.novaPosition);
         this.alternadorDePlano = 2;
-      } else if (this.alternadorDePlano === 2) {
+      }
+
+      else if (this.alternadorDePlano === 2) {
         console.log("CRIANDO PLANO 3", this.plano3.position.z);
         console.log("CRIANDO PLANO", this.alternadorDePlano);
         this.novaPosition = this.plano3.position.z + proxPlano;
         this.plano3.position.set(0, 0, this.novaPosition);
         this.alternadorDePlano = 3;
-      } else if (this.alternadorDePlano === 3) {
+      }
+
+      else if (this.alternadorDePlano === 3) {
         console.log("CRIANDO PLANO 4", this.plano4.position.z);
         console.log("CRIANDO PLANO", this.alternadorDePlano);
         this.novaPosition = this.plano4.position.z + proxPlano;
         this.plano4.position.set(0, 0, this.novaPosition);
         this.alternadorDePlano = 4;
-      } else {
+      }
+
+      else {
         console.log("CRIANDO PLANO 5", this.plano5.position.z);
         console.log("CRIANDO PLANO", this.alternadorDePlano);
         this.novaPosition = this.plano5.position.z + proxPlano;
@@ -87,15 +94,19 @@ function createPlane() {
 
   var wallMaterial = new THREE.MeshPhongMaterial({
     map: walltexture,
-    emissive: "#FF0000",
-    emissiveIntensity: 0.1,
+    castShadow: true,
+    receiveShadow: true
+    //emissive: "#FF0000",
+    //emissiveIntensity: 0.1,
   });
   var detalheMaterial = new THREE.MeshPhongMaterial({ map: detalheTexture });
 
   const materialPlano = wallMaterial;
   const materialLinha = new THREE.MeshPhongMaterial({
     color: 0xffffff,
+    visible: false,
     wireframe: true,
+    receiveShadow: true
   });
 
   //largura do plano 300
@@ -158,6 +169,7 @@ function createPlane() {
   plano.add(linePlano);
   plano.add(lateralEsq);
   plano.add(lateralDir);
+  plano.receiveShadow =  true;
 
   //lateralEsq.add(lineLateralEsq);
   //  lateralDir.add(lineLateralDir);

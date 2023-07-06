@@ -210,21 +210,32 @@ var buttons = new Buttons(onButtonDown, onButtonUp);
 var actions = {};
 
 function syncJoystick() {
-  console.log(mouse);
-
   if (actions.up) {
     mouse.add(new Vector2(0, 0.003));
     console.log(mouse);
+    if (movimentoAviao.rotation.x <= 0.3) {
+      movimentoAviao.rotateX(0.005);
+    }
   }
   if (actions.down) {
     mouse.add(new Vector2(0, -0.003));
     console.log(mouse);
+    if (movimentoAviao.rotation.x >= -0.3) {
+      movimentoAviao.rotateX(-0.005);
+    }
   }
   if (actions.left) {
     mouse.add(new Vector2(-0.003, 0));
+    console.log(movimentoAviao);
+    if (movimentoAviao.rotation.z <= 0.3) {
+      movimentoAviao.rotateZ(0.005);
+    }
   }
   if (actions.right) {
     mouse.add(new Vector2(0.003, 0));
+    if (movimentoAviao.rotation.z >= -0.3) {
+      movimentoAviao.rotateZ(-0.005);
+    }
   }
 }
 
@@ -393,6 +404,7 @@ criaNovasTorretas(-500);
 criaNovasTorretas(-1000);
 criaNovasTorretas(-1500);
 criaNovasTorretas(-2000);
+
 // Criando tiros
 var tiros = [];
 tiros.forEach(function (tiro) {

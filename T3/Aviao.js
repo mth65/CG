@@ -59,4 +59,19 @@ onAirplaneLoad(scene, gltf) {
     this.carregado = true;
   }
 
+defaultMove() {
+  if(this.rotation.z >= 0.02){
+    this.rotateZ(-0.001);
+  }
+  else if(this.rotation.z <= -0.02){
+    this.rotateZ(0.001);
+  }
+  if(this.rotation.x >= 0.01){
+    this.rotateX(-0.0001);
+  }
+  if(this.rotation.x <= -0.01){
+    this.rotateX(0.0001);
+  }
+}
+
 }
